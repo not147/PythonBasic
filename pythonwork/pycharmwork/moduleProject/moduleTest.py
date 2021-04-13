@@ -41,9 +41,12 @@ print(Math().PI)
 print(Math().solve(3))
 '''
 
+import sys
 
-from mymodule import company as com
-from mymodule import *
+# sys.path.append("C:\\netsong7\\mylib")
+
+from mymodule2 import company as com
+from mymodule2 import *
 
 print(sum(10, 20))
 info(80, 180, name="홍길동", blood="O")
