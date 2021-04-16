@@ -8,9 +8,6 @@ class MainFrame(wx.Frame):
 
     def ui(self):
         self.panel = wx.Panel(self)
-        # esc키 누르면 프로그램 종료
-        self.panel.SetFocus()
-        self.panel.Bind(wx.EVT_KEY_DOWN, self.onClose)
 
         wx.StaticText(self.panel, label="**************************기타 컴퍼넌트**************************",
                       pos=(20, 5))
@@ -18,7 +15,9 @@ class MainFrame(wx.Frame):
         # TextCtrl
         wx.StaticText(self.panel, label="너의 이름은 ", pos=(20, 70))
         self.txtName = wx.TextCtrl(self.panel, value="초기값", pos=(100, 70))
-        self.Bind(wx.EVT_TEXT, self.onText, self.txtName)
+        # self.Bind(wx.EVT_TEXT, self.onText, self.txtName)
+        self.Bind(wx.EVT_KEY_DOWN, self.onKeyCode, self.txtName)
+
 
         # CheckBox
         self.chkMarried = wx.CheckBox(self.panel, label="결혼은?", pos=(20, 120))
@@ -36,7 +35,8 @@ class MainFrame(wx.Frame):
         # 결과 값 확인
         self.txtShow = wx.TextCtrl(self.panel, pos=(20, 400), size=(320, 150), style=wx.TE_MULTILINE | wx.TE_READONLY)
 
-
+        # esc키 누르면 프로그램 종료
+        self.panel.Bind(wx.EVT_CHAR_HOOK, self.onKeyCode)
 
     def onText(self, e):
         # self.txtShow.AppendText("TextCtrl에서 이벤트 발생 : {}\n".format(self.txtName.GetValue()))
@@ -51,10 +51,15 @@ class MainFrame(wx.Frame):
     def onCombo(self, e):
         self.txtShow.AppendText("ComboBox에서 이벤트 발생 : {},  {}\n".format(e.GetInt(), e.GetString()))
 
-    def onClose(self, e):
+    def onKeyCode(self, e):
        #print(e.GetKeyCode())
        if e.GetKeyCode() == wx.WXK_ESCAPE:
             self.Close(True)
+       elif e.GetKeyCode() == wx.WXK_RETURN:
+            self.txtShow.AppendText("TextCtrl에서 이벤트 발생 : {}\n".format(self.txtName.GetValue()))
+
+       e.Skip()
+
 
 
 if __name__ == "__main__":
