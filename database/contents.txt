@@ -1,0 +1,43 @@
+데이터 베이스(DBMS)
+=========================
+Data Persistence : 파일 -> DBMS
+DataWareHouse : 정보에 입각한 의사결정을 내릴 수 있도록 분석 가능한 정보의 중앙 레포지토리
+Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동적으로 통계적 규칙이나 패턴을 찾아내는 것
+
+1. 제품의 종류 : Oracle, MS-SQL Server, DB2, informix, sybase, mysql, ....
+
+2. 연결 방식
+	(1) 로컬 DBMS : Access, SQLite
+	(2) 네트워크 DBMS : 서버용, 클라이언트용
+
+3. MySQL의 클라이언트 프로그램
+	(1) 콘솔용 : mysql.exe(서버용 : mysqld.exe)
+	(2) 윈도우용
+		- workbench
+		- HeidiSql
+
+4. 데이터의 저장 형태
+	(1) 계층형 DB : Tree
+	(2) 네트워크형 DB : Graph
+	(3) 관계형 DB : Table
+	(4) 객체지향형 DB
+	(5) 객체관계형 DB
+
+5. DB 단위
+	필드(속성) < 레코드(튜플) < 테이블(파일) < DataBase
+
+
+6. DB 서버에 접속
+	(1) 콘솔 이용
+		mysql -uroot -p1111
+		mysql -uroot -p
+		mysql -h127.0.0.1 -uroot -p 
+
+		show databases;
+		use db명;
+		show tables;
+		desc 테이블명;
+
+
+
+
