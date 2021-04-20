@@ -38,6 +38,429 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 		show tables;
 		desc 테이블명;
 
+	(2) 실습 준비
+		1) scott.sql을 이용해서 sample data 준비
+			- 접속되어 있지 않은 상태 : mysql -uroot -p < scott.sql
+			- 접속되어 있는 상태 : source C:\netsong7\database\scott.sql
+
+		2) sakila와 world 샘플을 백업
+			mysqldump -uroot -p sakila > sakila.sql
+			mysqldump -uroot -p world > world.sql
+
+
+7. SQL(Structured Query Language)
+(1) DDL(Data Definition Language) : 데이터 정의어
+	CREATE 
+	DROP
+	ALTER
+
+(2) DML(Data Manipulation Language) : 데이터 조작어
+	INSERT
+	UPDATE
+	DELETE
+
+(3) QL(Query Language) : 데이터 질의어
+	SELECT
+
+(4) DCL(Data Control Language) : 데이터 제어어 (보안, 인증, 시스템관리, 트랜젝션 관리 등)
+	GRANT, REVOKE, ...
+
+* 두 가지 문법
+	1) 표준 SQL(ANSI SQL) 
+	2) 제품에 따른 SQL
+		- Oracle : PL/SQL
+		- MS : T-SQL
+
+8. SELECT
+(1) 기본 문법
+	SELECT 필드명, 필드명, ... FROM 테이블명;
+	SELECT * FROM 테이블명;
+	------------------------------------------------------
+	SELECT ename, sal, deptno, job FROM emp;
+	SELECT * FROM emp;
+
+	-- 필드의 가공 처리
+	------------------------------------------------------
+	SELECT empno, ename, sal,  FROM emp;
+
+	-- 필드의 alias
+	------------------------------------------------------
+	SELECT ename, mgr manager, sal+200 as 'add salary' FROM emp;
+
+	-- 중복 제거
+	------------------------------------------------------
+	SELECT distinct job FROM emp;
+
+(2) 확장 문법
+	1) 정렬 기능 : ORDER BY 필드명 [ASC | DESC], 필드명, ...
+	------------------------------------------------------------------------
+		-- 급여가 많은 순으로 이름, 급여, 부서코드 조회
+		SELECT ename, sal, deptno FROM emp ORDER BY sal DESC;
+
+		-- 부서별로 급여가 적은 순으로 이름, 급여, 부서코드 조회
+		SELECT ename, sal, deptno FROM emp ORDER BY deptno DESC, sal DESC;
+
+	2) 조건 기능(레코드 필터링) : WHERE 조건문
+	-------------------------------------------------------------------------
+		-- 급여가 3000$ 이상인 직원의 사번, 이름, 업무, 급여를 조회
+		SELECT empno, ename, job, sal FROM emp WHERE sal >= 3000;
+
+		-- 업무가 manager인 직원의 이름, 부서, 업무, 급여를 조회
+		SELECT ename, deptno, job, sal FROM emp WHERE job = 'manager';
+
+		-- 부서가 20이고 업무가 analyst인 직원의 이름, 부서, 업무, 급여를 조회
+		SELECT ename, deptno, job, sal FROM emp WHERE deptno=20 AND job='analyst'; 
+
+		-- 급여가 1500이상 2500이하를 받는 직원의 이름, 부서, 업무, 급여를 조회
+		SELECT ename, deptno, job, sal FROM emp WHERE  sal>=1500 AND sal<=2500;
+		SELECT ename, deptno, job, sal FROM emp WHERE  sal BETWEEN 1500 AND 2500;
+
+		-- 급여가 1500이상 2500이하를 받는 직원의 이름, 부서, 업무, 급여를 조회
+		-- 단, 급여가 많은 순으로 조회
+		SELECT ename, deptno, job, sal FROM emp 
+			WHERE  sal BETWEEN 1500 AND 2500 ORDER BY sal DESC;
+
+		-- 업무가 clerk, salesman, analyst 인 직원의 이름, 부서, 업무, 급여를 조회
+		SELECT ename, deptno, job, sal FROM emp
+			WHERE job='clerk' OR job='salesman' OR job='analyst';
+
+		SELECT ename, deptno, job, sal FROM emp
+			WHERE job IN('clerk', 'salesman', 'analyst');
+
+		-- 1982년 1월 1일 이후에 입사한 직원의 이름, 업무, 입사일자를 조회
+		SELECT ename, job, hiredate FROM emp WHERE hiredate > '1982^1^1';
+
+		-- 커미션이 없는 직원의 이름, 부서, 업무, 급여, 커미션을 조회
+		SELECT ename, deptno, job, sal, comm FROM emp WHERE comm IS null;
+		SELECT ename, deptno, job, sal, comm FROM emp WHERE job != 'salesman';
+
+		-- 커미션이 있는 직원의 이름, 부서, 업무, 급여, 커미션을 조회
+		SELECT ename, deptno, job, sal, comm FROM emp WHERE comm IS NOT null;
+
+	3) Like 연산자
+		% : 0개 이상의 문자를 대체
+		_ : 1개 문자를 대체
+		-------------------------------------
+		beau% : beau, beau로 시작하는 모든 문자열
+		beau_ : beaua, beaub, ...
+
+		-- 이름이 s로 시작하는 직원의 이름, 업무, 급여를 조회
+		SELECT ename, job, sal FROM emp WHERE ename LIKE 's%';
+
+	4) GROUP BY 필드명 [, 필드명, 필드명, ...] [HAVING 조건문]
+		-- 부서별로 급여 평균, 최저 급여를 조회
+		SELECT deptno, avg(sal), min(sal) FROM emp GROUP BY deptno;
+
+		-- 부서별로 급여평균, 최저 급여를 조회(단, 급여평균이 높은 순으로 조회)
+		SELECT deptno, avg(sal) as '급여평균', min(sal) as '최저급여' FROM emp 
+			GROUP BY deptno ORDER BY avg(sal) DESC;
+
+		-- 전체 급여의 합계가 5000을 초과하는 업무에 대해 급여 합계를 조회
+		SELECT job, sum(sal) FROM emp 
+			GROUP BY job HAVING sum(sal) > 5000;
+
+		-- 전체 급여의 합계가 5000을 초과하는 업무에 대해 급여 합계를 조회
+		-- (단, salesman은 제외)
+		SELECT job, sum(sal) FROM emp 
+			GROUP BY job HAVING sum(sal) > 5000 AND job != 'salesman';
+
+		SELECT job, sum(sal) FROM emp WHERE job != 'salesman'
+			GROUP BY job HAVING sum(sal) > 5000;
+
+(3) 연습 문제
+	1. 1981년에 입사한 사람의 이름, 업무, 입사일자 조회
+	SELECT ename, job, hiredate FROM emp WHERE hiredate BETWEEN '810101' AND '811231';
+	SELECT ename, job, hiredate FROM emp WHERE hiredate LIKE '81%'
+
+	2. 사번이 7902, 7788, 7566인 사원의 이름, 업무, 급여, 입사일자 조회
+	SELECT empno, ename, job, sal, hiredate FROM emp WHERE empno IN('7902', '7788', '7566');
+
+	3. 업무가 manager, clerk, analyst가 아닌 직원의 이름, 업무, 급여, 부서번호 조회
+	SELECT ename, job, sal, deptno FROM emp WHERE job NOT IN('manager', 'clerk', 'analyst');
+
+	4. 업무가 president 또는 salesman이고 급여가 1500인 직원의 이름, 급여, 업무, 부서번호 조회
+	SELECT ename, sal, job, deptno FROM emp WHERE job='president' OR job='salesman' AND sal=1500;
+	SELECT ename, sal, job, deptno FROM emp WHERE (job='president' OR job='salesman') AND sal=1500;
+	SELECT ename, sal, job, deptno FROM emp WHERE job IN('president', 'salesman') AND sal=1500;
+
+	5. 가장 최근에 입사한 직원의 이름, 부서, 업무, 입사일자 조회
+	SELECT ename, deptno, job, hiredate FROM emp ORDER BY hiredate DESC;
+	SELECT ename, deptno, job, hiredate FROM emp ORDER BY hiredate DESC  LIMIT 1;
+
+	6. 같은 부서내에서 같은 업무를 하는 직원의 급여가 많은 순으로 조회
+	SELECT ename, deptno, job, sal FROM emp ORDER BY deptno, job, sal DESC;
+
+	7. 커미션이 급여보다 10%이상 많은 직원의 급여가 많은 순으로 조회
+	SELECT * FROM emp WHERE comm > sal*1.1;
+
+	8. 이름에 L자가 2개 있고 30번 부서이거나 직속상사가 7782인 직원의 이름, 부서, 직속상사 조회
+	SELECT ename, deptno, mgr FROM emp WHERE ename like '%L%L%' AND (deptno=30 OR mgr=7782);
+
+
+9.  함수 (Single Row Function, Aggregation Function, ...)
+(1) Single Row Function(String, Numeric, Data&Time)
+	1) String Function
+		ASCII(), CHAR()
+		---------------------- 
+		SELECT ascii('a'), char(98);
+
+		LENGTH()
+		------------
+		SELECT ename, length(ename) FROM emp;
+	
+		INSTR()
+		-----------
+		SELECT instr('foobarbar', 'bar'), instr('foobarbar', 'love');
+
+		LEFT(), RIGHT(), SUBSTR(), SUBSTRING()
+		------------------------------------------------
+		SELECT left('abcdefg', 3);
+		SELECT substring('I love sql', 3);
+		SELECT substring('I love sql', 3, 4);
+		SELECT substring('I love sql', -3);
+		SELECT substring('I love sql', -8, 3);
+
+		LOWER(), UPPER()
+		----------------------------
+		SELECT lower('ABcdEF'), UPPER('ABcdEF');
+
+		LTRIM(), RTRIM(), TRIM()
+		-----------------------------------
+		SELECT '              abc                 ';
+		SELECT rtrim(ltrim('              abc                 ')) as trim;
+		SELECT trim('              abc                 ') as trim;
+
+	2) Numeric Function
+		CEIL(), FLOOR(), ROUND(), TRUNCATE()
+		-------------------------------------------------
+		SELECT ceil(1.23), floor(1.78);
+		SELECT round(1.23), round(1.23, 0), round(1.78, 1);
+		SELECT truncate(1.78, 0), truncate(1.78, 1), truncate(1.78, -1);
+
+		MOD()
+		---------
+		SELECT mod(29, 9), 20 mod 9, 20 % 9;
+
+		RAND()
+		-----------
+		SELECT rand();
+
+		/*
+			n <= R < m
+			floor(rand() * (m-n) + n)
+		*/
+		-- 7보다 크거나 같고 12보다 작은 범위내에서 난수를 뽑아라.
+		SELECT floor(rand() * (12-7) + 7);
+
+	3) Date & Time Function
+		NOW(), SYSDATE(), CURDATE(), CURTIME()
+		---------------------------------------------------------
+		SELECT now();
+		SELECT sysdate();
+		SELECT curdate();
+		SELECT curtime();
+		
+		YEAR(), MONTH(), DAYOFMONTH() : 연, 월, 일
+		---------------------------------------------------------
+		SELECT year(now()), month(now()), dayofmonth(now());
+		SELECT dayofmonth('2021/05/19');
+
+		DAYOFWEEK() : 1-일요일 , WEEKDAY() : 0-월요일
+		--------------------------------------------------------------
+		SELECT dayofweek(now()), weekday(now());
+
+		DAYOFYEAR() : 현재까지의 일수
+		-----------------------------------------
+		SELECT dayofyear(now());
+
+		DATE_ADD(), DATE_SUB(), ADDDATE()
+		-----------------------------------------------
+		SELECT DATE_ADD(now(), interval 5 year); 
+		SELECT DATE_ADD(now(), interval 100 day); 
+		
+		그외
+		-------
+		SELECT datediff(now(), '2019/5/19');
+		SELECT last_day(now());
+
+(2) Aggregation Function : avg(), sum(), count(), max(), min()
+	-- 업무가 salesman인 직원들의 급여 평균, 최고액, 최저액 , 합계를 조회
+	SELECT avg(sal), max(sal), min(sal), sum(sal) FROM emp WHERE job='salesman';
+
+	-- WHERE절에는 그룹함수를 사용할 수 없다.
+	--SELECT empno, ename, hiredate FROM emp WHERE hiredate = max(hiredate); 
+
+	SELECT count(empno) FROM emp;
+	SELECT count(job) FROM emp;
+	SELECT count(sal) FROM emp;
+	SELECT count(*) FROM emp;
+	SELECT count(comm) FROM emp;
+
+(3) 기타 함수
+	1) CONVERT()
+		SELECT convert('20210420', DATE);
+		SELECT convert(150, CHAR);
+
+	2) CASE
+	-----------
+		-- 업무가  salesman이면 '커미션 있음'이라고 조회하고 그 외 업무는 '커미션 없음'이라고 조회
+		SELECT ename, job, comm,  
+			CASE
+				WHEN job='salesman' THEN '커미션 있음'
+				ELSE '커미션 없음'
+			END as '커미션 여부'
+		FROM emp;
+
+	3) COALESCE()  : NULL값을 다른 값을 대체
+		-- 현재 직원들의 총 급여를 조회
+		SELECT ename, sal, comm, job, (sal + comm) as 총급여 FROM emp;
+
+		SELECT ename, sal, comm, job, (sal + coalesce(comm, 0)) as 총급여 FROM emp;
+
+(4) 예제
+	* timestampdiff()
+	1. 오늘부터 12월 25일까지 몇일이 남았는가?
+
+	2. 현재까지 근무한 직원들의 근무일수를 몇주 몇일로 조회.(단, 근무일수가 많은 사람 순으로 조회)
+
+	3. 10번 부서 직원들 중 현재까지의 근무월수를 계산해서 조회
+
+	4. 20번 부서 직원들 중 입사일자로부터 13개월이 지난 후의 날짜를 조회
+
+	5. 모든 직원에 대해 입사한 달의 근무일수를 조회
+
+	6. 현재 급여에 15%가 증가된 급여를 계산하여 사번,이름, 급여, 증가된 급여를 조회(단, 급여는 반올림하여 적용한다.)
+
+	7. 이름, 입사일, 입사일로부터 현재까지의 월수, 급여,급여 총계를 조회
+
+	8. 업무가 analyst이면 급여를 10%증가시키고 clerk이면 15%, manager이면 20%증가 시켜서 이름, 업무, 급여, 증가된 급여를 조회
+
+	9. 이름의 첫글자가 k보다 크고 y보다 작은 직원의 이름, 부서, 업무를 조회하시오.
+
+
+10. DML : INSERT, UPDATE, DELETE
+	CREATE TABLE tbltest(
+		id	int		not null,
+		name	varchar(10)	null,
+		regdate	datetime		
+	);
+
+(1) INSERT
+	INSERT INTO 테이블명(필드명, ...) VALUES(값, ...);
+	INSERT INTO 테이블명 VALUES(값, ...);
+	-------------------------------------------------------------
+	INSERT INTO tbltest(id, name) VALUES(1, 'hong');
+	INSERT INTO tbltest VALUES(2, 'kim', now());
+	INSERT INTO tbltest(name, id, regdate) VALUES('홍길동', 3, null);
+
+(2) UPDATE
+	UPDATE 테이블명
+	SET 필드=값 [, 필드=값, ...]
+	WHERE 조건문;
+	----------------------------------------
+	UPDATE tbltest
+	SET id=100, name="lee", regdate=date_add(now(), interval 3 day)
+	WHERE id=1;
+
+	*. Workbench 사용 시 안전모드 해제
+		Edit > Preferences > SQL Editor > Safe Update 체크박스 해제
+
+(3) DELETE
+	DELETE FROM 테이블명;
+	DELETE FROM 테이블명 WHERE 조건문;
+	------------------------------------------------------
+	DELETE FROM tbltest;
+
+
+11. Sub Query
+(1) 다른 query문에 포함된 query문
+(2) 반드시 ( ) 사용
+(3) 연산자의 오른쪽에 와야 한다.
+(4) 내부 query는 ORDER BY 사용 불가
+(5) 연산자
+	- 단일행 연산자 : 기본 연산자
+	- 다중행 연산자 : IN, ANY, ALL, EXISTS, ...
+--------------------------------------------------------
+	-- scott의 급여보다 더 많이 받는 직원의 이름, 업무, 급여를 조회
+	SELECT sal FROM emp WHERE ename='scott';
+	SELECT ename, job, sal FROM emp WHERE sal>3000;
+
+	SELECT ename, job, sal FROM emp 
+		WHERE sal>(SELECT sal FROM emp WHERE ename='scott');
+
+
+	-- 사번이 7521의 업무와 같고, 급여가 7934보다 많은 직원의 사번, 이름, 업무, 급여를 조회
+	SELECT job FROM emp WHERE empno=7521;
+	SELECT sal FROM emp WHERE empno=7934;
+	
+	SELECT empno, ename, job, sal FROM emp 
+		WHERE job='salesman' AND sal>1300;
+
+	SELECT empno, ename, job, sal FROM emp 
+		WHERE job=(SELECT job FROM emp WHERE empno=7521) 
+		AND 
+		sal>(SELECT sal FROM emp WHERE empno=7934);
+
+	-- 가장 최근에 입사한 직원의 이름, 부서, 업무, 입사일자 조회
+	SELECT max(hiredate) FROM emp;
+	SELECT ename, deptno, job, hiredate FROM emp WHERE hiredate='870523';
+
+	SELECT ename, deptno, job, hiredate FROM emp 
+		WHERE hiredate=(SELECT max(hiredate) FROM emp);
+
+	-- 업무별 최소급여를 받는 직원의 사번, 이름, 부서코드를 조회
+	SELECT distinct job FROM emp;
+		CLERK
+		SALESMAN
+		MANAGER
+		ANALYST
+		PRESIDENT
+
+	SELECT min(sal) FROM emp WHERE job='clerk';
+	SELECT min(sal) FROM emp WHERE job='salesman';
+	SELECT min(sal) FROM emp WHERE job='manager';
+	SELECT min(sal) FROM emp WHERE job='analyst';
+	SELECT min(sal) FROM emp WHERE job='president';
+
+	SELECT empno, ename, deptno FROM emp WHERE sal=800;
+	...
+	------------------------------------------------------------------------------------
+	SELECT job, min(sal) FROM emp GROUP BY job;
+		job       | min(sal)
+		----------+----------
+		CLERK     |      800
+		SALESMAN  |     1250
+		MANAGER   |     2450
+		ANALYST   |     3000
+		PRESIDENT |     5000
+
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal=800 OR sal=1250 OR sal=2450 OR sal=3000 OR sal=5000;
+
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal IN(800, 1250, 2450, 3000, 5000);
+
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal IN(SELECT min(sal) FROM emp GROUP BY job);
+
+	-- 업무별 최소급여보다 많이 받는 직원의 사번, 이름, 부서코드를 조회
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal>800 OR sal>1250 OR sal>2450 OR sal>3000 OR sal>5000;
+
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal > ANY(SELECT min(sal) FROM emp GROUP BY job);
+
+	-- 업무별 최대급여 이상 받는 직원의 사번, 이름, 부서코드를 조회
+	SELECT empno, ename, deptno FROM emp 
+		WHERE sal >= ALL(SELECT max(sal) FROM emp GROUP BY job);
+
+
+
+
+
+
+
+
 
 
 
