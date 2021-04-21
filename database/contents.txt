@@ -350,11 +350,31 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 		SELECT deptno, ename, sal, (round(sal * 1.15)) AS '증가된 급여' FROM emp;
 
 	7. 이름, 입사일, 입사일로부터 현재까지의 월수, 급여,급여 총계를 조회
+		SELECT ename, hiredate, (hiredate) AS '근속개월',  
+		PERIOD_DIFF( CAST(DATE_FORMAT(NOW(),"%Y%m") AS UNSIGNED), 
+			CAST(DATE_FORMAT(hiredate,"%Y%m") AS UNSIGNED)) AS months, 
+		sal, 
+		(PERIOD_DIFF( CAST(DATE_FORMAT(NOW(),"%Y%m") AS UNSIGNED), 
+			CAST(DATE_FORMAT(hiredate,"%Y%m") AS UNSIGNED)) *sal) AS '급여 총계' FROM scott_emp;
+
+		SELECT ename, hiredate, timestampdiff(month,hiredate,now()) as '근무월수',
+			sal , sal*timestampdiff(month,hiredate,now()) as '총급여'
+		FROM emp;
 
 	8. 업무가 analyst이면 급여를 10%증가시키고 clerk이면 15%, manager이면 20%증가 시켜서 이름, 업무, 급여, 증가된 급여를 조회
+		SELECT ename, job, sal,
+    			round(case
+        				when job = 'analyst' then round(sal * 1.1) 
+       				when job = 'clerk' then round(sal * 1.15)
+        				when job = 'manager' then round(sal * 1.2)
+        				else sal
+		    	end) as '증가된 급여'
+		FROM emp;
 
 	9. 이름의 첫글자가 k보다 크고 y보다 작은 직원의 이름, 부서, 업무를 조회하시오.
-
+		SELECT ename, deptno, job
+		FROM emp
+		WHERE ascii(substr(ename,1,1)) > ascii('K') AND ascii(substr(ename,1,1)) < ascii('Y');
 
 10. DML : INSERT, UPDATE, DELETE
 	CREATE TABLE tbltest(
