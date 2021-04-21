@@ -320,16 +320,34 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 (4) 예제
 	* timestampdiff()
 	1. 오늘부터 12월 25일까지 몇일이 남았는가?
+		SELECT datediff('2021/12/25', now());
 
 	2. 현재까지 근무한 직원들의 근무일수를 몇주 몇일로 조회.(단, 근무일수가 많은 사람 순으로 조회)
+		SELECT ename, deptno, job, floor(datediff(now(), hiredate)/7) as weeks,  
+			datediff(now(), hiredate) mod 7 as days	
+		FROM emp ORDER BY weeks DESC, days DESC;
+
+		SELECT ename, deptno, job, 
+			concat(timestampdiff(week, hiredate, now()), '주', 
+				datediff(now(), hiredate) mod 7, '일') as 근무일수
+		FROM emp ORDER BY datediff(now(), hiredate) DESC;
 
 	3. 10번 부서 직원들 중 현재까지의 근무월수를 계산해서 조회
+		SELECT ename, timestampdiff(month, hiredate, now()) as '근무월수'
+		FROM emp WHERE deptno=10;
 
 	4. 20번 부서 직원들 중 입사일자로부터 13개월이 지난 후의 날짜를 조회
+		SELECT ename, deptno, job, hiredate, 
+			date_format(adddate(hiredate, interval 13 month), '%Y/%m/%d')as '13개월 후'
+		FROM emp WHERE deptno=20;
 
 	5. 모든 직원에 대해 입사한 달의 근무일수를 조회
+		SELECT ename, deptno, job, hiredate, 
+			datediff(last_day(hiredate), hiredate) as '근무일수'
+		FROM emp;
 
 	6. 현재 급여에 15%가 증가된 급여를 계산하여 사번,이름, 급여, 증가된 급여를 조회(단, 급여는 반올림하여 적용한다.)
+		SELECT deptno, ename, sal, (round(sal * 1.15)) AS '증가된 급여' FROM emp;
 
 	7. 이름, 입사일, 입사일로부터 현재까지의 월수, 급여,급여 총계를 조회
 
@@ -380,6 +398,8 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 (5) 연산자
 	- 단일행 연산자 : 기본 연산자
 	- 다중행 연산자 : IN, ANY, ALL, EXISTS, ...
+(6) 다중열 비교
+(7) 상관 Sub Query
 --------------------------------------------------------
 	-- scott의 급여보다 더 많이 받는 직원의 이름, 업무, 급여를 조회
 	SELECT sal FROM emp WHERE ename='scott';
@@ -455,12 +475,229 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 		WHERE sal >= ALL(SELECT max(sal) FROM emp GROUP BY job);
 
 
+	-- 다중열 비교
+	--------------------
+		-- 'miller'의 급여와 보너스를 1500, 300로 변경
+		SELECT sal, comm FROM emp WHERE ename='miller';  -- 1300, null
+
+		UPDATE emp
+		SET sal=1500, comm=300
+		WHERE ename='miller';	
+
+		/* 
+		급여와 커미션이 30번 부서에 있는 직원들의 급여와 커미션이 같은 다른 부서 직원에 대해
+		사번, 이름, 부서번호, 급여, 커미션을 조회
+		*/
+		SELECT empno, ename, deptno, sal, comm FROM emp
+			WHERE sal IN(SELECT sal FROM emp WHERE deptno=30)
+				AND
+				comm IN(SELECT comm FROM emp WHERE deptno=30);
 
 
+		SELECT empno, ename, deptno, sal, comm FROM emp
+			WHERE (sal, comm) IN (SELECT sal, comm FROM emp WHERE deptno=30);
+
+		UPDATE emp
+		SET sal=1300, comm=null
+		WHERE ename='miller';
+	
+	-- 상관 서브 쿼리
+	----------------------
+		-- 적어도 한명의 직원으로부터 보고를 받을 수 있는 직원의 사번, 이름, 업무, 부서를 조회
+		SELECT empno, ename, job, deptno FROM emp e1
+			WHERE exists(SELECT * FROM emp e2 WHERE e1.empno=e2.mgr);
+
+		SELECT empno, ename job, deptno FROM emp
+			WHERE empno IN(SELECT distinct mgr FROM emp);
 
 
+	-- 기타 서브쿼리
+	-------------------------
+		SELECT * FROM emp WHERE deptno=30;
+		SELECT * FROM (SELECT * FROM emp WHERE deptno=30) as t;  -- 인라인 뷰
+		
+		-- 테이블 복사
+		INSERT INTO tbltest(id, name) SELECT empno, ename FROM emp;
+		INSERT INTO tbltest(id, name) SELECT empno, ename FROM emp LIMIT 5;
+
+	-- 연습 문제
+	1. Blake와 같은 부서에 있는 모든 직원의 사번, 이름, 입사일자 조회
+
+	2. SELECT empno, ename, deptno, sal, comm FROM emp
+		WHERE (sal, comm) IN(SELECT sal, comm FROM emp WHERE deptno=30);
+	이 쿼리에서 보너스가 null인 사람도 출력될 수 있도록 수정하시오.
+
+	3. 평균 급여 이상을 받는 직원들의  사번, 이름을 조회. 단, 급여가 많은 순으로 정렬
+
+	4. 이름에 T자가 들어가는 직원이 근무하는 부서에서 근무하는 직원의 사번,이름, 급여 조회
+
+	5. 부서의 위치가 dallas인 모든 직원에 대해 사번, 이름, 급여, 업무조회
+
+	6. King에게 보고하는 모든 직원의 이름과 부서, 업무, 급여를 조회
+
+	7. 급여가 30번 부서의 최저급여보다 높은 직원의 사번, 이름, 급여 조회
+
+	8. 10번부서에서 30번 부서의 직원과 같은 업무를 하는 직원의 이름과 업무를 조회
 
 
+12. JOIN
+(1) 여러 개의 테이블을 병합하여 하나의 결과를 도출하기 위한 방법
+(2) 종류
+	1) Cartesian Product Join(데카르트 곱 조인)
+	2) Equi Join
+		- 공통 필드의 레코드를 가져오는 방법(중복)
+		- INNER JOIN(중복 제거)
+	3) OUTER JOIN
+		- INNER JOIN의 확장
+			INNER JOIN + 공통되지 않은 레코드로 추출
+		- 종류
+			LEFT OUTER JOIN
+			RIGHT OUTER JOIN
+			FULL OUTER JOIN(mysql에서는 지원하지 않음)
+	4) Non Equi Join
+		- 서로 공통되지 않는 필드의 레코드를 가져오는 방법
+	5) Self Join
+		- 서로 같은 테이블을 복제하여 조인
+---------------------------------------------------------------------------------
+	
+use testdb;
 
+CREATE TABLE tblA(
+	id	int	null,
+	value	int	null
+);
 
+CREATE TABLE tblB(
+	id	int	null,
+	value	int	null
+);
+
+CREATE TABLE tblC(
+	id	int	null,
+	value	int	null
+);
+
+INSERT INTO tblA VALUES(1, 10);
+INSERT INTO tblA VALUES(2, 20);
+INSERT INTO tblA VALUES(3, 30);
+INSERT INTO tblA VALUES(5, 50);
+INSERT INTO tblA VALUES(7, 70);
+
+INSERT INTO tblB VALUES(1, 10);
+INSERT INTO tblB VALUES(2, 20);
+INSERT INTO tblB VALUES(4, 40);
+INSERT INTO tblB VALUES(5, 50);
+INSERT INTO tblB VALUES(8, 80);
+
+INSERT INTO tblC VALUES(1, 10);
+INSERT INTO tblC VALUES(2, 20);
+INSERT INTO tblC VALUES(7, 70);
+INSERT INTO tblC VALUES(8, 80);
+INSERT INTO tblC VALUES(9, 90);
+===============================
+
+-- INNER JOIN
+	SELECT tblA.id, tblA.value FROM tblA INNER JOIN tblB ON tblA.id = tblB.id;
+	SELECT a.id, a.value FROM tblA a INNER JOIN tblB b ON a.id = b.id;
+	SELECT a.id, a.value FROM tblA a JOIN tblB b ON a.id = b.id;
+
+	SELECT a.id, a.value FROM tblA a, tblB b WHERE a.id = b.id;
+	SELECT a.id, a.value FROM tblA a, tblB b;
+
+	-- 직원의 사번, 이름, 업무, 부서번호, 부서명을 조회
+	SELECT empno, ename, job, emp.deptno, dname FROM emp JOIN dept 
+	ON emp.deptno = dept.deptno;
+
+	-- salesman의 업무를 수행하는 직원의 사번, 이름, 업무, 부서번호, 부서명을 조회
+	SELECT empno, ename, job, emp.deptno, dname FROM emp JOIN dept 
+	ON emp.deptno = dept.deptno AND job='salesman';
+
+	SELECT empno, ename, job, emp.deptno, dname FROM emp JOIN dept 
+	ON emp.deptno = dept.deptno 
+	WHERE job='salesman';
+
+	-- Newyork에서 근무하는 직원의 사번, 이름, 업무, 부서명 조회
+	SELECT empno, ename, job, dname FROM emp JOIN dept
+	ON emp.deptno = dept.deptno AND loc='NEW YORK';
+
+------------------------------------------------------------------------------------------------
+
+-- OUTER JOIN
+	SELECT a.id, a.value, b.id, b.value FROM tblA a LEFT OUTER JOIN tblB b
+	ON a.id = b.id;
+
+	SELECT a.id, a.value, b.id, b.value FROM tblA a RIGHT OUTER JOIN tblB b
+	ON a.id = b.id;
+
+	/*
+	직원들의 이름, 급여, 부서명, 근무지를 조회하시오. 단, 부서명과 근무지는 모두 출력할 수 있도록 하시오.
+	*/
+	SELECT ename, sal, dname, loc FROM  emp RIGHT OUTER JOIN dept
+	ON emp.deptno = dept.deptno;
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+-- NON EQUI JOIN
+-------------------------
+	-- 직원들의 사번, 이름, 업무, 급여, 급여 등급 조회
+	SELECT empno, ename, job, sal, grade, losal, hisal 
+	FROM emp INNER JOIN salgrade
+	ON emp.sal >= salgrade.losal AND emp.sal <= salgrade.hisal;
+
+--------------------------------------------------------------------------------------------------------------
+
+-- SELF JOIN
+-------------------
+	-- 직원의 사번, 이름, 업무, 관리자, 관리자 이름을 조회
+	SELECT e1.empno, e1.ename, e1.job, e1.mgr, e2.ename FROM emp e1  INNER JOIN  emp e2
+	ON e1.mgr = e2.empno;
+
+-------------------------------------------------------------------------------------------------------------
+
+-- 세 개의 테이블 조인
+	SELECT a.id, a.value FROM tblA a  INNER JOIN  tblB b
+	ON a.id = b.id
+	INNER JOIN tblC c
+	ON b.id = c.id;
+
+	SELECT a.id, a.value FROM tblA a, tblB b, tblC c
+	WHERE a.id = b.id AND b.id = c.id;
+
+------------------------------------------------------------------------------------------
+
+-- 집합 연산자 : UNION, UNION ALL, INTERSECT(X), EXCEPT(X)
+	SELECT deptno FROM emp
+	UNION
+	SELECT deptno FROM dept;
+
+	SELECT deptno FROM emp
+	UNION ALL
+	SELECT deptno FROM dept;
+
+---------------------------------------------------------------------------------------
+(3) 연습 문제
+	1) 말단 사원의 사번, 이름, 업무, 부서번호, 근무지를 조회
+	2) Self Join 예제
+		CREATE TABLE tblBook(
+                          		author  varchar(20),
+                          		title varchar(20)
+		);
+
+		INSERT INTO tblBook VALUES('최주현', '하늘과 땅');
+		INSERT INTO tblBook VALUES('최주현', '바다');
+		INSERT INTO tblBook VALUES('유은정', '바다');
+		INSERT INTO tblBook VALUES('박성우', '문');
+		INSERT INTO tblBook VALUES('최주현', '문');
+		INSERT INTO tblBook VALUES('박성우', '천국');
+		INSERT INTO tblBook VALUES('최지은', '천국');
+		INSERT INTO tblBook VALUES('최주현', '천국');
+		INSERT INTO tblBook VALUES('박성우', '고슴도치');
+		INSERT INTO tblBook VALUES('서금동', '나');	
+
+		- 한 권의 책에 대해 두 명 이상의 작가가 쓴 책 조회
+			책 이름	작가명	작가명
+
+		- 한 권의 책에 대해 세 명의 작가가 쓴 책 조회
+			책 이름	작가명	작가명	작가명
+		
 
