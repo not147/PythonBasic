@@ -542,28 +542,46 @@ Data Mining : 대규모로 저장된 데이터 안에서 체계적이고 자동�
 
 	-- 연습 문제
 	1. Blake와 같은 부서에 있는 모든 직원의 사번, 이름, 입사일자 조회
+		SELECT empno, ename, hiredate, deptno FROM emp
+		WHERE deptno = (SELECT deptno FROM emp where ename = 'Blake');
 
 	2. SELECT empno, ename, deptno, sal, comm FROM emp
 		WHERE (sal, comm) IN(SELECT sal, comm FROM emp WHERE deptno=30);
 	이 쿼리에서 보너스가 null인 사람도 출력될 수 있도록 수정하시오.
+		SELECT empno, ename, deptno, sal, comm FROM emp
+		WHERE (sal, coalesce(comm, 0)) 
+		IN(SELECT sal, coalesce(comm, 0) FROM emp WHERE deptno=30);
 
 	3. 평균 급여 이상을 받는 직원들의  사번, 이름을 조회. 단, 급여가 많은 순으로 정렬
+		SELECT empno, ename FROM emp
+		WHERE sal >= (SELECT avg(sal) FROM emp)
+		ORDER BY sal DESC;
 
 	4. 이름에 T자가 들어가는 직원이 근무하는 부서에서 근무하는 직원의 사번,이름, 급여 조회
+		SELECT empno, ename, sal FROM emp
+		WHERE deptno IN (SELECT deptno FROM emp WHERE ename LIKE '%t%');
 
 	5. 부서의 위치가 dallas인 모든 직원에 대해 사번, 이름, 급여, 업무조회
+		SELECT empno, ename, sal, job FROM emp
+		WHERE deptno = (SELECT deptno FROM dept WHERE loc = 'dallas');
 
 	6. King에게 보고하는 모든 직원의 이름과 부서, 업무, 급여를 조회
+		SELECT ename,deptno,job, sal FROM emp
+		WHERE mgr = (SELECT empno FROM emp WHERE ename = 'King');
 
 	7. 급여가 30번 부서의 최저급여보다 높은 직원의 사번, 이름, 급여 조회
+		SELECT empno, ename, sal FROM emp
+		WHERE sal > (SELECT min(sal) FROM emp WHERE deptno = 30);
 
 	8. 10번부서에서 30번 부서의 직원과 같은 업무를 하는 직원의 이름과 업무를 조회
-
+		SELECT ename, job FROM emp
+		WHERE deptno = 10
+		AND job IN (SELECT job FROM emp WHERE deptno = 30)
 
 12. JOIN
 (1) 여러 개의 테이블을 병합하여 하나의 결과를 도출하기 위한 방법
 (2) 종류
-	1) Cartesian Product Join(데카르트 곱 조인)
+	1) Cartesian Product Join(데카르트 곱 조인, CROSS 조인)
 	2) Equi Join
 		- 공통 필드의 레코드를 가져오는 방법(중복)
 		- INNER JOIN(중복 제거)
@@ -697,6 +715,13 @@ INSERT INTO tblC VALUES(9, 90);
 ---------------------------------------------------------------------------------------
 (3) 연습 문제
 	1) 말단 사원의 사번, 이름, 업무, 부서번호, 근무지를 조회
+		SELECT empno, ename, job, e.deptno, loc 
+		FROM emp e INNER JOIN dept d
+		ON e.deptno = d.deptno
+		WHERE empno NOT IN (SELECT coalesce(mgr, 0) FROM emp)
+		ORDER BY hiredate DESC LIMIT 3;	
+	
+
 	2) Self Join 예제
 		CREATE TABLE tblBook(
                           		author  varchar(20),
@@ -716,8 +741,194 @@ INSERT INTO tblC VALUES(9, 90);
 
 		- 한 권의 책에 대해 두 명 이상의 작가가 쓴 책 조회
 			책 이름	작가명	작가명
+			SELECT b1.title, b1.author, b2.author 
+			FROM tblbook b1, tblbook b2
+			WHERE b1.title = b2.title AND b1.author > b2.author; 
+			
 
 		- 한 권의 책에 대해 세 명의 작가가 쓴 책 조회
 			책 이름	작가명	작가명	작가명
-		
+			SELECT b1.title, b1.author, b2.author, b3.author 
+			FROM tblbook b1, tblbook b2, tblBook b3
+			WHERE b1.title = b2.title AND b2.title = b3.title
+				AND b1.author>b2.author AND b2.author > b3.author; 
+
+
+
+13. 데이터 무결성(Data Integrity)
+(1) What?, How?
+	- 실체(Entity) 무결성 : 중복된 데이터를 방지
+		Primary Key, Unique
+	- 영역(Domain) 무결성 : 범위
+		Check(mysql 미지원)
+	- 참조(Reference) 무결성
+		Foreign Key
+
+
+(2) 컬럼의 속성
+	- NN(Not Null) 속성
+		Primary Key
+		not null
+	- ND(No Duplicate) 속성
+		Primary Key
+		Unique
+	- NC(No Change) 속성
+		Foreign Key
+
+* Primary Key
+--------------------
+	- NN속성과 ND속성 지원
+	- 한 테이블에 한 개만 사용
+	- 여러 개의 컬럼을 묶어서 사용 가능(다른 제약들도 가능)
+
+=================================================================
+
+CREATE TABLE tblExam(
+	id	int,
+	name	varchar(10)
+);
+
+**** Primary Key ****
+
+INSERT INTO tblExam(id) VALUES(1);
+INSERT INTO tblExam(name) VALUES('hong');
+
+DELETE FROM tblExam;
+
+------ 기본키 추가
+ALTER TABLE tblExam ADD CONSTRAINT pk_id PRIMARY KEY(id);
+
+-- NN속성 확인
+INSERT INTO tblExam(id) VALUES(1);
+INSERT INTO tblExam(name) VALUES('hong');
+
+-- ND속성 확인
+INSERT INTO tblExam(id) VALUES(1);
+
+------ 기본키 삭제
+ALTER TABLE tblExam DROP PRIMARY KEY;
+INSERT INTO tblExam(id) VALUES(1);
+
+DROP TABLE tblExam;
+
+-- 테이블 작성 시 기본기 추가
+
+CREATE TABLE tblExam(
+	id	int	PRIMARY KEY,
+	name	varchar(10) 
+);
+
+-- 또는
+
+CREATE TABLE tblExam(
+	id	int,
+	name	varchar(10),
+	CONSTRAINT pk_id PRIMARY KEY(id, name) 
+);
+
+INSERT INTO tblExam VALUES(1, 'hong');
+INSERT INTO tblExam VALUES(1, 'kim');
+INSERT INTO tblExam VALUES(1, 'hong');
+
+** 참고 **
+-- tel 필드 추가
+ALTER TABLE tblExam ADD tel char(10) not null;
+DESC tblExam;
+
+-- tel 필드의 null 변경
+ALTER TABLE tblExam MODIFY tel char(15) null;
+
+-- tel 필드 삭제
+ALTER TABLE tblExam DROP tel;
+
+**** Unique ****
+
+DROP TABLE tblExam;
+
+CREATE TABLE tblExam(
+	id	int	UNIQUE,
+	name	varchar(10) UNIQUE
+);
+
+-- 또는
+
+CREATE TABLE tblExam(
+	id	int,
+	name	varchar(10),
+	CONSTRAINT uk_id UNIQUE(id),
+	CONSTRAINT uk_name UNIQUE(name)
+);
+
+-- ND 속성 지원여부
+INSERT INTO tblExam(id) VALUES(1);
+INSERT INTO tblExam(id) VALUES(1);
+
+-- NN 속성 테스트
+INSERT INTO tblExam(name) VALUES(null);
+INSERT INTO tblExam(name) VALUES(null);
+
+/*
+	1. NN : default
+	2. ND, NN : auto_increment
+*/
+
+DROP TABLE tblExam;
+
+CREATE TABLE tblExam(
+	id	int	auto_increment,
+	name	varchar(10)	default 'no name',
+	age	int	default 0,
+	CONSTRAINT uk_id UNIQUE(id)
+);
+
+INSERT INTO tblExam(name, age) Values(null, null);
+INSERT INTO tblExam(name) Values('hong');
+INSERT INTO tblExam(age) Values(25);
+
+**** Foreign Key ****
+
+CREATE TABLE tblDept(
+	deptno	int,
+	dname	varchar(10)
+);
+
+INSERT INTO tblDept VALUES(100, 'Sales');
+INSERT INTO tblDept VALUES(200, 'Research');
+
+CREATE TABLE tblEmp(
+	empno	int,
+	ename	varchar(10),
+	hiredate	datetime,
+	deptno	int
+);
+
+INSERT INTO tblEmp(empno, ename, hiredate, deptno) VALUES(1, 'hong', now(), 300);
+
+ALTER TABLE tblEmp ADD CONSTRAINT fk_deptno FOREIGN KEY(deptno) REFERENCES tblDept(deptno);
+
+ALTER TABLE tblDept ADD CONSTRAINT pk_deptno PRIMARY KEY(deptno);
+
+ALTER TABLE tblEmp ADD CONSTRAINT fk_deptno FOREIGN KEY(deptno) REFERENCES tblDept(deptno);
+
+INSERT INTO tblEmp(empno, ename, hiredate, deptno) VALUES(1, 'hong', now(), 300);
+INSERT INTO tblEmp(empno, ename, hiredate, deptno) VALUES(1, 'hong', now(), 200);
+
+-- NC 속성 테스트
+UPDATE tblDept
+SET deptno = 2000
+WHERE deptno = 200;
+
+UPDATE tblDept
+SET deptno = 1000
+WHERE deptno = 100;
+
+*** 참고 : DD(Data Dictionary) ***
+show tables; #select * from 테이블정보
+show databases;
+show processlist;
+
+DESC information_schema.table_constraints;
+SELECT table_schema, table_name, constraint_type FROM information_schema.table_constraints;
+
+
 
