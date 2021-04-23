@@ -931,4 +931,119 @@ DESC information_schema.table_constraints;
 SELECT table_schema, table_name, constraint_type FROM information_schema.table_constraints;
 
 
+14. View 테이블 : 가상 테이블
+(1) 정의 : 실제 테이블을 여러 관점에서 투영한 가상 테이블
+(2) 이유
+	- 사용자에게 편리한 접근을 허용
+	- 효율적인 리소스 관리
+	- 컬럼 단위의 보안 관리가 가능
+(3) 작성방법
+	CREATE VIEW 뷰이름
+	AS
+	SELECT문;
+(4) 실습
+	CREATE VIEW vw_test
+	AS
+	SELECT empno, ename, sal, comm, dname
+	FROM emp INNER JOIN dept
+	ON emp.deptno = dept.deptno
+	WHERE sal >= 1500;
+
+	show tables;
+
+	SELECT * FROM vw_test;
+
+(5) 주의할 점
+	DML 작업(INSERT, UPDATE, DELETE)
+
+
+15. 인덱스(INDEX)
+(1) 작성 방법
+	- CREATE INDEX 인덱스명 ON 테이블(필드명, ...)
+	- 제약을 통해 자동으로 생성
+
+	CREATE TABLE tblIndex(
+		id	int,
+		name	varchar(10),
+		point	float
+	);
+
+	INSERT INTO tblIndex VALUES(5, 'scott', 9.8); 
+	INSERT INTO tblIndex VALUES(2, 'adam', 4.2);
+	INSERT INTO tblIndex VALUES(7, 'john', 6.7);
+	INSERT INTO tblIndex VALUES(1, 'tom', 5.0);
+
+	EXPLAIN SELECT * FROM tblIndex WHERE point >= 4;
+
+	CREATE INDEX idx_point ON tblIndex(point);
+	
+	EXPLAIN SELECT * FROM tblIndex WHERE point >= 4;
+
+	EXPLAIN SELECT * FROM tblIndex WHERE id >= 4;
+
+	ALTER TABLE tblIndex ADD CONSTRAINT pk_idx PRIMARY KEY(id);
+
+	EXPLAIN SELECT * FROM tblIndex WHERE id >= 4;
+
+
+16. 트랜젝션(Transaction)
+	임의로 정해 놓은 작업(DML) 단위
+	"All Or Nothing"
+
+	rollback
+	commit
+
+	SELECT @@autocommit;
+	SET @@autocommit = false;
+	SELECT @@autocommit;
+
+	로그파일에는 DML 작업만 기록된다.
+
+	동기화 작업 수행
+
+	ACID
+	-----------------------
+	- 원자성
+	- 일관성
+	- 고립성
+	- 지속성
+
+17. 데이터 모델링
+
+(1) 프로그램 개발 과정
+	1) 요구사항 수집
+	2) 요구사항 분석(DB 설계 - ERD)
+		- 개념적 설계
+		- 논리적 설계
+		- 물리적 설계
+	3) 코딩
+	4) 테스트
+	5) 배포(납품)
+	6) 유지보수
+
+(2) 정규화
+	1) 제 1 정규화 : 속성값은 반드시 원자값이어야 한다.
+	2) 제 2 정규화 : 모든 키가 아닌 컬럼은 기본키 전체에 의존적이어야 한다.
+		기본키 일부에 의존적이어서는 안된다.
+	3) 제 3 정규화 : 키가 아닌 컬럼은 다른 키가 아닌 컬럼에 의존적이어서는 안된다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
