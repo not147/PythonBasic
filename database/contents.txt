@@ -1028,6 +1028,7 @@ SELECT table_schema, table_name, constraint_type FROM information_schema.table_c
 	3) 제 3 정규화 : 키가 아닌 컬럼은 다른 키가 아닌 컬럼에 의존적이어서는 안된다.
 
 
+18. Python과 MySQL 연동
 
 
 
