@@ -1030,6 +1030,102 @@ SELECT table_schema, table_name, constraint_type FROM information_schema.table_c
 
 18. Python과 MySQL 연동
 
+19. Python과 SQLite 연동
+
+20. MongoDB
+(1) 다운로드 
+	https://www.mongodb.com/try/download/community
+
+(2) 서버 및 클라이언트 실행
+	1) monogd.exe
+		- 기본 경로 : c:/data/db 를 생성
+		- 원하는 경로 :  mongod --dbpath "c:/mongolab/db1"
+
+	2) 클라이언트 접속 : mongo.exe
+
+(3) 기본 명령어
+	1) show dbs;	
+	2) use db명;
+		- DB와 연결
+		- DB를 생성 후 연결
+	3) show collections;
+	4) db : 현재 DB를 조회
+		- db 삭제 : db.dropDatabase()
+
+(4) Collection : createCollection(), drop()
+	db.createCollection("이름" [, 옵션])
+	db.createCollection(<name>, {capped:<boolean>, autoIndexId:<boolean>, size:<number>, max:<number>})
+		capped : true로 설정하면 capped collection을 활성화한다.
+			capped collection 이란 고정된 크기를 가진 컬렉션이다.
+			size 옵션을 반드시 설정해야 한다.
+
+		autoIndexId : true로 설정하면 _id필드에 index를 자동으로 생성
+		size : 해당 컬렉션의 최대 크기를 지정(byte)
+		max : 컬렉션에 추가할 수 있는 최대 개수 지정
+	===============================
+	- 첫번째 Collection 만드는 방법
+		use test
+		db.createCollection("books");
+
+		db.books.insert({"title":"python 정복"})
+		db.books.insert({"title":"mongodb 정복", "author":"홍길동"})
+
+		db.books.find();
+	-----------------------------------------------------
+	- 두번째 Collection 만드는 방법
+		use test
+
+		db.hobby.insert({"name":"tom", "hobby":"낚시"})
+	-----------------------------------------------------
+	- Collection 삭제
+		db.books.drop()
+		db.hobby.drop()
+
+(5) Document : insert(), remove()
+	use test
+
+	db.books.insert({"title":"python 정복"})
+	db.books.insert({"title":"mongodb 정복", "author":"홍길동"})
+
+	- 여러 개의 document를 입력
+	db.books.insert(	[{"title":"book1", "author":"유비", "price":10000}, 
+			{"title":"book2", "author":"관우", "price":20000},
+			{"title":"book3", "author":"장비", "price":30000}]
+		)
+
+	- 여러 개의 value를 입력
+	db.books.insert({"title":"book4", "author":"tom", "seller" : ["교보", "영풍"]})
+
+	- 삭제
+	db.books.remove({"title" : "book4"})
+	db.books.remove({"_id" : ObjectId("6089136f19b4216ca3dcd17d")})
+
+(6) 스키마 설계
+	예를 들어 블로그를 위한 db설계를 하려고 한다.
+	- 게시글(post)에는 작성자 이름(username), 제목(title), 내용(content), 작성시간(writetime)을 가진다.
+	- 각 게시글에는 0개 이상의 태그를 가질 수 있다.(tag)
+	- 게시글에는 댓글을 달 수 있다. 댓글(comment)은 작성자 이름(username), 내용(content), 작성시간(writetime)을 가진다.
+		
+	{
+		_id : post_id,
+		title : post_title,
+		content : post_content,
+		username : post_username,
+		writetime : post_writetime,
+		
+		tags : [tag1, tag2, tag3, ... ],
+
+		comment : [
+			{content : post_content, username : post_username, writetime : post_writetime},
+			{content : post_content, username : post_username, writetime : post_writetime},
+			...
+			]
+	}
+
+
+
+
+
 
 
 
