@@ -1123,12 +1123,216 @@ SELECT table_schema, table_name, constraint_type FROM information_schema.table_c
 	}
 
 
+(7) 조회
+	- https://docs.mongodb.com/manual/reference/operator/query/
 
+	use test
 
+	db.articles.insert([
+		{
+			"title" : "article01",
+			"content" : "content01",
+			"writer" : "Tom",
+			"name" : {"first" : "gil dong", "last" : "hong"},
+			"language" : ["korean", "english", "french"],
+			"likes" : 0,
+			"comment" : []
+		},
+		{
+			"title" : "article02",
+			"content" : "content02",
+			"writer" : "Alpha",
+			"name" : {"first" : "j. k.", "last" : "tiger"},
+			"language" : ["korean", "chinese"],
+			"likes" : 23,
+			"comment" : [{"name" : "Bravo", "message" : "Hey man!"}]
+		},
+		{
+			"title" : "article03",
+			"content" : "content03",
+			"writer" : "Bravo",
+			"likes" : 40,
+			"comment" : [{"name" : "Charlie", "message" : "Hey man!"}, 
+				{"name" : "Delta", "message" : "Hey man!"}]
+		}
+	])
+	---------------------------------------------------------------------------------------------------------
+	*** 비교, 논리 연산자를 이용한 조회
 
+	- writer가 "Tom"인 document를 조회
+		db.articles.find({"writer":"Tom"}).pretty()
+		db.articles.find({"writer": {$eq : "Tom"}}).pretty()
 
+	- likes가 30이하인 document를 조회
+		db.articles.find({"likes" : {$lte : 30}}).pretty()
+	
+	- writer가 "Alpha"이고 likes값이 30보다 작은 document 조회
+		db.articles.find({$and : [ {"writer":"Alpha"}, { "likes" : {$lt : 30} } ] } ).pretty()
 
+	- likes가 10보다 크고 30보다 작은 document 조회
+		db.articles.find({$and : [{"likes" : {$gt : 10}}, {"likes" : {$lt : 30}}]}).pretty()
+		db.articles.find({"likes" : {$gt : 10, $lt : 30}}).pretty()
 
+	- writer가 "Alpha" 또는 "Bravo"인 document 조회
+		db.articles.find({$or : [{"writer" : "Alpha"}, {"writer" : "Bravo"}]}).pretty()
+		db.articles.find({"writer" : {$in : ["Alpha", "Bravo"]}}).pretty()
+
+	- writer가 "Bravo" 이거나 likes가 10미만인 document 조회
+		db.articles.find(
+			{"$or" : [
+				{"writer" : "Bravo"}, 
+				{"likes" : {$lt : 10}}
+				]
+			}
+		).pretty()
+
+	- title이 "article01"과 같고 likes값이 10미만인 document 조회
+		db.articles.find(
+			{$and : [
+				{"title" : "article01"}, 
+				{"likes" : {$lt : 10}}
+				]
+			}
+		).pretty()
+
+		db.articles.find({"title" : "article01", "likes" : {$lt : 10}}).pretty()
+	---------------------------------------------------------------------------------------
+	*** 정규 표현식을 이용한 조회 : $regex
+
+	- title에서 "01"이라는 문자열이 들어있는 document를 조회
+		db.articles.find({"title" : {$regex : "01"}}).pretty()
+		db.articles.find({"title" : /01/}).pretty()
+
+	- language에서 "eng"가 들어가는 document를 조회
+		db.articles.find({"language" : {$regex : "eng"}}).pretty()
+		db.articles.find({"language" : /eng/}).pretty()
+
+	- writer에 "alp"가 들어가는 document 조회(대소문자 구별 없이)
+		db.articles.find({"writer" : {$regex : "alp", $options:"$i"}}).pretty()
+
+	- title에서 article01, article02가 들어가는 document를 조회
+		db.articles.find({"title" : {$regex : "article0[1-2]"}}).pretty()
+		db.articles.find({"title" : /article0[1-2]/}).pretty()
+	-----------------------------------------------------------------------------------
+	*** $where : javascript 문법 사용 가능
+		
+	- comment에 값이 하나도 없는 document 조회
+		db.articles.find({$where : "this.comment.length == 0"}).pretty()
+	-----------------------------------------------------------------------------------
+	*** $elemMatch : Embeded Documents 배열을 조회할 때 사용
+	
+	- comment 중 "Charlie"가 쓴 댓글이 있는 document 조회
+		db.articles.find(
+			{"comment" : {$elemMatch : {"name" : "Charlie"}}}
+		).pretty()
+
+	- 이름이 j. k. 인 사람의 document 조회(Embeded Document일 경우)
+		db.articles.find({"name.first" : "j. k."}).pretty()
+
+	- 한국어를 할 수 있는 사람의 document를 조회(일반 배열의 경우)
+		db.articles.find({"language" : "korean"}).pretty()
+	------------------------------------------------------------------------------------
+	*** Projection 연산
+
+	- articles에서 title과 content만 조회
+		db.articles.find({}, {"_id":false, "title":true, "content":true}).pretty()
+		db.articles.find({}, {"title":true, "content":true}).pretty()
+
+	- $slice : mysql의 limit와 유사
+	----------------------------------
+	title이 article03인 document에서 댓글을 하나만 보이도록 조회
+		db.articles.find({"title" : "article03"}, {"title" : true, "comment" : true}).pretty()
+		db.articles.find({"title" : "article03"}, {"title" : true, "comment" : {$slice : 1}}).pretty()
+		db.articles.find({"title" : "article03"}, {"title" : true, "comment.name" : true }).pretty()
+
+	원하는 댓글만 가져오고자 했을 때
+		db.articles.find({"title" : "article03"}, 
+			{"title" : true, "comment" : {$elemMatch : {"name" : "Charlie"}}}).pretty()
+	-----------------------------------------------------------------------------------------------------------
+	*** sort(), limit(), skip()
+	
+		db.order.insert([
+			{"_id":1, "item":{"category":"cake", "type":"chiffon"}, "amount":10},
+			{"_id":6, "item":{"category":"cookies", "type":"chocolate chip"}, "amount":50},
+			{"_id":4, "item":{"category":"cookies", "type":"chocolate chip"}, "amount":15},
+			{"_id":3, "item":{"category":"cake", "type":"lemon"}, "amount":30},
+			{"_id":2, "item":{"category":"cake", "type":"carrot"}, "amount":20},
+			{"_id":5, "item":{"category":"brownies", "type":"blondie"}, "amount":10}
+		])
+
+		- id를 이용해서 정렬
+			db.order.find().sort({"_id" : 1})
+			db.order.find().sort({"_id" : -1})
+
+		- amout를 오름차순으로 정렬하고 그 결과내에서 다시 id값으로 내림차순 정렬
+			db.order.find().sort({"amount" : 1, "_id" : -1})
+
+		- 출력의 갯수를 제한하고자 하고자 할 때
+			db.order.find().limit(3)
+
+		- 데이터를 원하는 갯수만큼 생략하고 조회
+			db.order.find().skip(2)
+
+		- 응용 : 페이징 기능
+			var showPage = function(page){
+				return db.order.find().sort({"_id" : -1}).skip((page-1)*2).limit(2)
+			}
+		
+			showPage(1)
+			showPage(2)
+			showPage(3)
+
+(8) 수정 : update()
+	db.people.insert([
+		{name:"Abet", age:19},
+		{name:"Betty", age:20},
+		{name:"Charlie", age:23, skills:["mongodb", "nodejs"]},
+		{name:"David", age:23, score:20}
+	])
+	-----------------------------------------------------------------------------------
+	- Abet의 나이를 20살로 변경
+		db.people.update({"name" : "Abet"}, {$set : {age : 20}})
+	
+	- 새로운 값으로 대체(replace)
+		db.people.update({"name" : "Abet"}, {age : 19})
+	
+	- 원래 값으로 복원
+		db.people.update({"_id" :  ObjectId("608a59194b63366b2452ff0f")}, 
+			{"name" : "Abet", "age" : 19})
+
+	- 특정 필드 삭제 : $unset
+		David이 score 필드를 삭제
+		db.people.update({"name" : "David"}, {$unset : {"score" : 1}})
+
+	- 특정 필드 추가 : $set
+		db.people.update({"name" : "David"}, {$set : {"score" : 20}})
+
+	- 만약 업데이트하려는 document가 없을 때 insert를 할 수 있게 하는 방법
+		db.people.update({"name" : "Elly"}, {"name" : "Elly", "age" : 17}, {upsert : true})
+
+	- 여러 document이 특정 field를 수정
+		age가 20보다 작거나 같은 document의 score를 10으로 변경
+		db.people.update({"age" : {$lte : 20}}, {$set : {"score" : 10}})
+
+		다시 원래대로 복원
+		db.people.update({"name" : "Abet"}, {$unset : {"score" : 1}})		
+
+		db.people.update({"age" : {$lte : 20}}, {$set : {"score" : 10}}, {multi : true})
+	
+	- 배열에 값을 추가 : $push
+		Charlie document에서 skills 배열에 "python" 추가
+		db.people.update({"name" : "Charlie"}, {$push : {"skills" : "python"}})
+
+		db.people.update({"name" : "Charlie"}, {$push : {"skills" : ["c", "c++"]}})
+
+		db.people.update({"name" : "Charlie"}, {$push : {"skills" : {$each : ["R", "Keras"]}}})
+
+	- 배열에 값을 삭제 : $pull
+		db.people.update({"name" : "Charlie"}, {$pull : {"skills" : "python"}})
+
+		db.people.update({"name" : "Charlie"}, {$pull : {"skills" : ["c", "c++"]}})
+
+		db.people.update({"name" : "Charlie"}, {$pull : {"skills" : {$in : ["R", "Keras"]}}})
 
 
 
