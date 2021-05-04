@@ -148,6 +148,75 @@ test3(10, 20)
 test3(10, 20, 30)
 test3("3", "홍길동", 30)
 
+test4 <- function(a, b, ...){
+  print(a)
+  print(b)
+  print("------------")
+  print(list(...))
+}
+
+test4(10, 20, 30, 40)
+
+#### 문자열 함수 ####
+
+### stringr : 정규 표현식 활용
+install.packages("stringr")
+library(stringr)  # require(stringr)
+
+str1 <- "홍길동35이순신45임꺽정35"
+str_extract(str1, "\\d{2}")
+str_extract_all(str1, "\\d{2}")
+class(str_extract_all(str1, "[0-9]{2}"))
+
+str2 <- "hongkd105leess1002you25TOM400강감찬2005"
+str_extract_all(str2, "[a-zA-Z가-힣]+")
+
+length(str2)
+str_length(str2)
+
+str_locate(str2, "강감찬")
+
+str_c(str2, "유비55")
+str2
+
+str3 <- "hongkd105,leess1002,you25,TOM400,강감찬2005"
+str_split(str3, ",")
+
+### 기본 함수
+sample <- data.frame(c1=c("abc_abcdefg", "abc_ABCDE", "ccd"), c2=1:3)
+sample
+
+nchar(sample[1, 1]) # 문자열의 갯수
+which(sample[, 1] == "ccd")
+toupper(sample[1, 1])
+tolower(sample[2, 1])
+substr(sample[, 1], start=1, stop=2)
+paste0(sample[, 1], sample[, 2])
+paste(sample[, 1], sample[, 2], sep="@@")
+
+### 문자열을 분리해서 하나의 컬럼을 두개의 컬럼으로 확장
+install.packages("splitstackshape")
+library(splitstackshape)
+
+cSplit(sample, splitCols = "c1", sep="_")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

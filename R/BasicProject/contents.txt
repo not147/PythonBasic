@@ -56,6 +56,52 @@ I. 데이터 타입
   (2) python의 dict와 유사
   (3) list()
 
+=============================================================
+
+II. 기술 통계량
+
+1) min(vec), max(vec) 
+2) range(vec) : 벡터를 대상으로 범위값을 구하는 함수
+3) mean(vec), median(vec)
+4) sum(vec)
+5) order(vec)
+6) rank(vec)
+7) sd(vec), var(rec)
+8) summary(vec)
+9) quantile(vec)
+10) table(vec)
+11) str()
+12) sample(x, y) : x의 범위에서 y만큼 샘플 데이터를 생성하는 함수
+13) head(), tail()
+14) unique()
+
+==================================================
+
+III. dplyr
+
+1) filter() : 행 추출 -> subset(), 데이터[행 추출조건, ], sql의 where와 유사
+2) select() : 열 추출 -> 데이터[, 열 추출조건], sql의 select와 유사사
+3) arrange() : 정렬 -> order(), sort()
+4) mutate()
+5) summarize()
+6) groupby()
+7) left_join()
+8) bind_rows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
