@@ -82,24 +82,94 @@ III. dplyr
 1) filter() : 행 추출 -> subset(), 데이터[행 추출조건, ], sql의 where와 유사
 2) select() : 열 추출 -> 데이터[, 열 추출조건], sql의 select와 유사사
 3) arrange() : 정렬 -> order(), sort()
-4) mutate()
-5) summarize()
-6) groupby()
-7) left_join()
-8) bind_rows()
+4) mutate() : 열 추가 -> transform()
+5) summarize() : 통계량 산출 -> aggregate()
+6) groupby() : 집단별로 나누기 -> subset(), tapply(), aggregate()
+7) left_join() : 데이터 합치기(열) -> cbind()
+8) bind_rows() : 데이터 합치기(행) -> rbind()
+
+==================================================
+
+IV. Data PreProcessing
+
+1. 순서
+  데이터 탐색 => 결측치 처리 => 이상치 처리 => Feature Engineering
+
+2. 데이터 탐색
+  (1) 변수 확인
+  (2) 변수 유형(범주형, 연속형, 문자형, 숫자형, ...)
+  (3) 변수의 통계량 : 평균, 중간값, 최빈값, 분포, ...
+  (4) 변수와 관계, 평균 차이 검정(마지막 Analysis단계에서도 활용)
+  
+3. 결측치 처리
+  (1) 삭제
+  (2) 다른 값으로 대체(평균, 최빈값, 중간값, ...)
+  (3) 예측값 : 선형 회귀분석, 로지스틱 회귀분석
+
+4. 이상치 처리
+  (1) 이상치 탐색
+    - 시각적 확인 : 산포도(산점도, scatter plot), 상자도표(box plot)
+    - 통계적 확인 : 표준 편차(잔차), leverage, Cook's D
+    
+  (2) 처리 방법
+    - 삭제
+    - 다른 값으로 대체
+    - 리샘플링(케이스별로 분리)
+
+5. Feature Engineering
+  (1) Scaling : 단위 변경
+  (2) Binning : 연속형 변수를 범주형 변수로 변환
+  (3) Dummy(One hot Encoding) : 범주형 변수를 연속형 변수로 변환
+  (4) Transform : 기존 존재하는 변수의 성질을 이용해 다른 변수를 만드는 방법
+
+===================================================================================
+
+V. Mysql 연동
+  create database rtest;
+  use rtest;
+  create table score (
+    student_no varchar(50) primary key,
+    kor int default 0,
+    eng int default 0,
+    mat int default 0
+  );
+
+ insert into score(student_no, kor, eng, mat) values('1', 90, 80, 70);
+ insert into score(student_no, kor, eng, mat) values('2', 90, 88, 70);
+ insert into score(student_no, kor, eng, mat) values('3', 90, 89, 70);
+ insert into score(student_no, kor, eng, mat) values('4', 90, 87, 70);
+ insert into score(student_no, kor, eng, mat) values('5', 90, 60, 70);
 
 
+* 서버8에서의 오류
+Failed to connect to database: Error: Plugin caching_sha2_password could not be loaded: 지정된 모듈을 찾을 수 없습니다. Library path is '/mingw64/lib/mariadb/plugin/caching_sha2_password.dll'
+
+C:\ProgramData\MySQL\MySQL Server 8.0\my.ini 를 편집
+  default_authentication_plugin=mysql_native_password
+
+서버 재부팅
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '1111';
 
 
+Loading local data is disabled; this must be enabled on both the client and server sides
+오류 발생 시
+SET global local_infile=1;
 
 
+===================================================================================
 
+VI. 과제
 
+(1) 서울시에 치킨집이 제일 많은 지역이 어디인가?
+  http://www.localdata.kr
 
+(2) 서울시의 공기 오염도 현황 2017~ 2019에 일산화질소 농도 변화를 조사
+  http://data.seoul.go.kr
 
-
-
-
+(3) 지하철역 주변 아파트 가격 알아보기
+  http://data.seoul.go.kr
+  http://rtdown.molit.go.kr
 
 
 
