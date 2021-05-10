@@ -129,17 +129,253 @@ ggplot(data=mpg, aes(x=displ, y=hwy))
 ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point()
 ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point() + xlim(3, 6) + ylim(10, 30)
 
+ggplot(mpg, aes(displ, hwy)) + geom_point() + xlim(3, 6) + ylim(10, 30)
+
+# midwest 데이터를 이용하여 전체인구(poptotal)와 아시아 인구(popasian)간에 
+# 어떤 관계가 있는지 알아보려고 한다.
+# x축은 전체인구, y축은 아시안 인구로 된 산포도를 작성
+# 단, 전체 인구는 30만명 이하, 아시아 인구는 1만명 이하인 지역만 산포도 표시
+
+options(scipen=99)  # 지수를 숫자로 표현
+
+ggplot(midwest, aes(poptotal, popasian)) + geom_point() + xlim(0, 300000) +
+  ylim(0, 10000)
+
+
+### 막대 그래프 : geom_col(), 히스토그램 : geom_bar()
+library(dplyr)
+
+# mpg데이터에서 구동방식(drv)별로 고속도로 평균 연비를 조회하고 그 결과를 
+# 막대 그래프로 표현
+
+df_mpg <- mpg %>% group_by(drv) %>% summarise(mean_hwy=mean(hwy))
+
+ggplot(df_mpg, aes(drv, mean_hwy)) + geom_col()
+ggplot(df_mpg, aes(reorder(drv, mean_hwy), mean_hwy)) + geom_col()
+ggplot(df_mpg, aes(reorder(drv, -mean_hwy), mean_hwy)) + geom_col()
+
+ggplot(mpg, aes(drv)) + geom_bar()
+ggplot(mpg, aes(hwy)) + geom_bar()
+
+# 어떤 회사에서 생산한 "SUV"차종의 도시 연비가 높은지 알아보려고 한다.
+# "SUV"차종을 대상으로 평균 cty가 가장 높은 회사 다섯 곳을 그래프로 출력
+
+df_mpg <- mpg %>% filter(class=="suv") %>% group_by(manufacturer) %>%
+  summarise(mean_cty=mean(cty)) %>% arrange(desc(mean_cty)) %>% head(5)
+df_mpg
+
+ggplot(df_mpg, aes(reorder(manufacturer, mean_cty), mean_cty)) + geom_col()
+
+
+# 자동차 중에서 어떤 종류(class)가 가장 많은지 알아보려고 한다.
+# 자동차 종류별 빈도를 그래프로 출력
+
+table(mpg$class)
+ggplot(mpg, aes(class)) + geom_bar()
+
+
+### 선 그래프 : geom_line()
+str(economics)
+head(economics)
+tail(economics)
+
+ggplot(economics, aes(date, unemploy)) + geom_line()
+ggplot(economics, aes(date, psavert)) + geom_line()
+
+
+### 상자 그래프 : geom_boxplot()
+ggplot(mpg, aes(drv, hwy)) + geom_boxplot()
+
+# mpg 데이터에서 class가 "compact", "subcompact", "suv"인 자동차의 cty가
+# 어떻게 다른지 비교해 보려고 한다.
+# 이 세 차종의 도시연비를 비교
+
+class_mpg <- mpg %>% filter(class %in% c("compact", "subcompact", "suv")) %>% 
+  select(class, cty)
+class_mpg
+
+ggplot(class_mpg, aes(class, cty)) + geom_boxplot()
+
+### 참고
+# 치트 시트 : Help > Cheatsheets > Data Visualization with ggplot2
+
+
+### iris 샘플
+
+str(iris)
+
+# 꽃받침(Sepal)의 길이에 따라서 폭의 크기가 어떤 관계인지 분포를 확인
+# pch : 0~127
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + 
+  geom_point(colour="red", pch=2, size=3)
+
+
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + 
+  geom_point(colour=c("red", "green", "blue")[iris$Species], 
+             pch=c(0, 2, 20)[iris$Species], 
+             size=c(1, 3, 5)[iris$Species])
+
+
+ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, 
+                 size=Petal.Length, color=Species)) + geom_point()
+
+
+graph <- ggplot(iris, aes(Sepal.Length, Sepal.Width)) + 
+  geom_point(colour=c("red", "green", "blue")[iris$Species], 
+             pch=c(0, 2, 20)[iris$Species], 
+             size=c(1, 3, 5)[iris$Species]) + coord_flip()
+
+
+# 라벨링
+graph + labs(title="꽃받침의 비교",
+             subtitle = "꽃받침의 길이에 대해 폭의 크기 확인",
+             caption = "주석 달기",
+             x = "꽃받침의 길이",
+             y = "꽃받침의 폭")
+
+
+## 같은 y축에 여러 그래프 그리기(선 그래프)
+# 1. 순서를 갖는 데이터를 준비
+seq <- as.integer(rownames(iris))
+iris_data <- cbind(seq=seq, iris)
+iris_data
+
+# 2. 각 데이터에 대한 색상 지정(rainbow(), heat.colors(), terrain.colors())
+# topo.colors(), cm.colors())
+
+ex = topo.colors(30)
+pie(rep(1, 30, col=ex))
+
+# 범례를 위해 이름 준비
+cols <- topo.colors(4, alpha=0.5)
+names(cols)<- names(iris_data)[2:5]
+names(cols)
+cols
+
+# wide형을 long형으로 
+library(reshape2)
+
+mdata <- melt(iris_data, id.vars = c("seq", "Species"))
+mdata
+
+# cex : 선의 두께
+g <- ggplot(mdata) + geom_line(aes(x=seq, y=value, color=variable), cex=0.8, show.legend = T)
+g
+
+g + scale_color_manual(name="변수명",
+                       values = cols[mdata$variable],
+                       labels = c("꽃받침의 길이", "꽃받침의 폭", "꽃잎의 길이", 
+                                  "꽃잎의 폭"))
+
+
+# 품종별로 꽃잎의 길이를 확인(상자그림)
+ggplot() + geom_boxplot(data=iris, aes(x=Species, y=Petal.Length, fill=Species))
+
+
+#### Interactive Graph ####
+# https://plot.ly/ggplot2
+
+install.packages("plotly")
+library(plotly)
+
+p <- ggplot(data=mpg, mapping=aes(displ, hwy, col=drv)) + geom_point()
+p
+ggplotly(p)
+
+
+### 시계열 데이터
+install.packages("dygraphs")
+library(dygraphs)
+
+head(economics)
+
+library(xts)
+
+eco <- xts(economics$unemploy, order.by=economics$date)
+eco
+class(eco)
+
+dygraph(eco)
+
+
+#### 지도 그래프 : 단계 구분도, Choropleth map ####
+install.packages("ggiraphExtra")
+library(ggiraphExtra)
+
+str(USArrests)
+head(USArrests)
+class(USArrests)
+
+library(tibble)
+crime <- rownames_to_column(USArrests, var="state")
+head(crime)
+str(crime)
+
+crime$state <- tolower(crime$state)
+str(crime)
+
+
+install.packages("maps")
+library(ggplot2)
+
+states_map <- map_data("state")
+str(states_map)
+
+install.packages("mapproj")
+library(mapproj)
+?ggChoropleth
+ggChoropleth(data=crime, mapping=aes(fill=Murder, map_id=state), 
+             map=states_map, interactive = T)
+
+### 대한민국 지도 만들기기
+# https://github.com/cardiomoon/kormaps2014
+
+install.packages("devtools")
+devtools::install_github("cardiomoon/kormaps2014")
+# 라이브러리 실제 위치 : C:\Users\acorn\Documents\R\win-library\4.0
+library(kormaps2014)
+
+head(korpop1)
+str(korpop1)
+
+head(kormap1)
+str(kormap1)
+
+
+korpop1 <- changeCode(korpop1)
+str(korpop1)
+
+# 컬럼 이름 변경
+library(dplyr)
+korpop1 <- rename(korpop1, pop="총인구_명", name="행정구역별_읍면동")
+str(korpop1)
+
+library(ggplot2)
+library(ggiraphExtra)
+
+ggChoropleth(data=korpop1, aes(fill=pop, map_id=code, tooltip=name), 
+             map=kormap1, interactive = T)
 
 
 
+#### Text Mining ####
 
+install.packages("rJava")
+# rJava 삭제, Sys.setenv(JAVA_HOME='경로'), rJava 설치
 
+install.packages("memoise")
+install.packages("KoNLP") # 직접 설치 안됨
 
+# Rtools 설치
+# https://www.facebook.com/notes/r-korea-krugkorean-r-user-group/konlp-%EC%84%A4%EC%B9%98-%EC%9D%B4%EC%8A%88-%EA%B3%B5%EC%9C%A0/1847510068715020/
+install.packages("multilinguer")
+install.packages(c('stringr', 'hash', 'tau', 'Sejong', 'RSQLite', 'devtools'), type = "binary")
+install.packages("remotes")
+remotes::install_github('haven-jeon/KoNLP', upgrade = "never", INSTALL_opts=c("--no-multiarch"))
 
+library(KoNLP)
 
+useNIADic()
 
-
-
-
-
-
+extractNoun("아버지가방에들어가신다")
+extractNoun("대한민국의 영토는 한반도와 그 부속도서로 한다.")
