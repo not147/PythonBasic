@@ -58,6 +58,21 @@
             아닐 경우 : Welch's t-test
             
           *. paired t-test인 경우 Wilcoxen signed rank test(비모수일 경우)
+          
+        - 모수적인 통계방식과 비모수적인 통계방식
+          모수적인 방식 : 정규분포일 경우
+          비모수적인 방식 : 정규분포가 아닐 경우
+          
+          A	20	21	21	22	124				
+          B	40	41	42	43	42				
+									
+          A	  A	  A	  A	  B	  B	  B	  B	  B	  A
+          20	21	21	22	40	41	42	42	43	124
+          1	  2.5	2.5	4	  5	  6	  7.5	7.5	9	  10
+									
+	        1 + 2. 5 + 2. 5 + 4 + 10 = 20								
+	        5 + 6 + 7.5 + 7.5 + 9 = 35								
+
       
       2) anova : 비교 대상이 3개 이상인 경우
         - 집단이 3개 이상일 때 : one way anova, 일원 배치 분산분석
@@ -72,7 +87,17 @@
         
         * 사후 검정: Tukey, DUNcan, Bonferroni, Fisher's LSD, ....
         
-        
+        - 조건
+          *. 결과값이 연속변수 
+            아닐 경우 : Kruskal-wallis H test
+            
+          *. 정규 분포 여부
+            아닐 경우 : Kruskal-wallis H test
+            
+          *. 등분산 여부
+            아닐 경우 : welch's anova
+            
+          모든 조건을 만족하는 경우 anova를 사용하고 사후검정은 Tukey를 사용
         
         
         
