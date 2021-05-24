@@ -274,26 +274,182 @@ mydata <- read.csv("../data/regression.csv")
 View(mydata)
 str(mydata)
 
+mydata1 <- mydata[, -1]
+head(mydata1)
+
+reg1 <- lm(birth_rate ~ ., data=mydata1)
+summary(reg1)
+
+# cultural_center 와 urban park는 제외
+reg2 <- lm(birth_rate ~ social_welfare + active_firms + pop + doctors + tris + kindergarten + dummy, 
+           data=mydata)
+summary(reg2)
+
+# backward
+full.model <- lm(birth_rate ~ ., data=mydata1)
+reduced.model <- step(full.model, direction = "backward")
+reduced.model
+
+reg3 <- lm(birth_rate ~ social_welfare + active_firms + pop  + tris + kindergarten, 
+           data=mydata)
+summary(reg3)
+
+par(mfrow = c(2, 2))
+plot(reg2)
+plot(reg3)
+
+# 정규성 검증
+shapiro.test(resid(reg2))
+
+# 정규성 교정
+library(car)
+summary(powerTransform(mydata$birth_rate))
+
+reg4 <- lm(log(birth_rate) ~ social_welfare + active_firms + 
+             pop + doctors + tris + kindergarten + dummy, data=mydata)
+summary(reg4)
+shapiro.test(resid(reg4))
+
+plot(reg4)
+
+# 다중 공선성
+sqrt(vif(reg1))
+sqrt(vif(reg2))
+sqrt(vif(reg3))
+sqrt(vif(reg4))
+
+# 등분산성
+ncvTest(reg1)
+ncvTest(reg2)
+ncvTest(reg3)
+ncvTest(reg4)
+
+spreadLevelPlot(reg4)
 
 #### 실습 예제2 ####
 ### 서울시 자전거 분석
 
 ## 데이터 준비
+data <- read.csv("../data/SeoulBikeData.csv")
+summary(data)
+str(data)
 
-# 1. 시간대별로 평균 몇 대가 대여 되었을까?
+library(dplyr)
+## 1. 시간대별로 평균 몇 대가 대여 되었을까?
+table(data$Hour)
 
-# 2. 위의 결과를 시각화
+result1 <- data %>% group_by(Hour) %>%
+  summarise(count=mean(Rented.Bike.Count)) %>%
+  arrange(desc(count))
 
-# 3. 2016년 1월 1일은 금요일이었다. Date변수에서 요일을 뽑아서 파생변수 만들기
+result1
 
-# 4. 요일별로 평균 몇 대가 대여되었을까?
+## 2. 위의 결과를 시각화
+library(ggplot2)
 
-# 5. 위의 결과를 시각화
+ggplot(result1, aes(Hour, count)) +
+  geom_line(color="blue", size=2) +
+  geom_vline(xintercept = 8, size=2, color="red") + 
+  geom_vline(xintercept = 18, size=2, color="red") +
+  annotate(geom="text", x=6, y=1100, label="출근") +
+  annotate(geom="text", x=16, y=1500, label="퇴근")
 
-# 6. 요일 별로 시간대별 그래프로 시각화 
 
-# 7. 선형 분석
+## 3. 2016년 1월 1일은 금요일이었다. Date변수에서 요일을 뽑아서 파생변수 만들기
+fnWeek <- function(n){
+  w = n %% 7;
+  
+  if(w == 0){
+    ret = "FRI"
+  }else if(w == 1){
+    ret = "SAT"
+  }else if(w == 2){
+    ret = "SUN"
+  }else if(w == 3){
+    ret = "MON"
+  }else if(w == 4){
+    ret = "TUE"
+  }else if(w == 5){
+    ret = "WED"
+  }else if(w == 6){
+    ret = "THU"
+  }
+  
+  return(ret)
+}
+
+View(data)
+
+d <- as.Date(data$Date, "%d/%m/%Y") - as.Date("2016/01/01")
+class(as.integer(d))
+
+data$weekdays <- unlist(lapply(as.integer(d), fnWeek))
+str(data)
+
+## 4. 요일별로 평균 몇 대가 대여되었을까?
+week.mean <- data %>% group_by(weekdays) %>%
+  summarise(count=mean(Rented.Bike.Count)) %>% arrange(desc(count))
+
+week.mean
+
+## 5. 위의 결과를 시각화
+ggplot(week.mean, aes(reorder(weekdays, count), count, fill=weekdays)) + 
+  geom_col() + coord_flip()
+
+## 6. 요일 별로 시간대별 그래프로 시각화 
+week.date <- data %>% select(weekdays, Hour, Rented.Bike.Count) %>%
+  group_by(weekdays, Hour) %>%
+  summarise(mean = mean(Rented.Bike.Count))
+
+week.date
+week.date %>% filter(weekdays=='MON')
+week.date[which(week.date$weekdays == "MON"), ]
+
+a <- ggplot(week.date[which(week.date$weekdays == "MON"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("MON")
+b <- ggplot(week.date[which(week.date$weekdays == "TUE"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("TUE")
+c <- ggplot(week.date[which(week.date$weekdays == "WED"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("WED")
+d <- ggplot(week.date[which(week.date$weekdays == "THU"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("THU")
+e <- ggplot(week.date[which(week.date$weekdays == "FRI"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("FRI")
+f <- ggplot(week.date[which(week.date$weekdays == "SAT"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("SAT")
+g <- ggplot(week.date[which(week.date$weekdays == "SUN"), ], aes(Hour, mean)) +
+  geom_line() + ggtitle("SUN")
+
+library(gridExtra)
+grid.arrange(a, b, c, d, e, f, g, nrow=2, ncol=4)
+
+# 또 다른 방법
+ggplot(week.date, aes(Hour, mean)) + geom_line() + facet_wrap(~weekdays)
+
+
+## 7. 선형 분석
 # 각 변수들이 자전거 대여 횟수와 관련이 있는가?
 # 온도에 따라 몇 대의 자전거가 대여 될까?(예를 들어 온도가 23도일때 자전거 대여횟수는 998대이다.)
+
+par(mfrow = c(1, 1))
+plot(x=data$Temperature.C., y=data$Rented.Bike.Count)
+
+linear_reg <- lm(Rented.Bike.Count ~ Temperature.C., data=data)
+summary(linear_reg)
+
+a = 29.0811
+b = 329.9525
+abline(a=b, b=a, col="red")
+
+y = a * 23 + b
+cat("온도가 23도일 때, 예측되는 대여 횟수는 ", y)
+
+
+
+
+
+
+
+
 
 
