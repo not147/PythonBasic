@@ -19,100 +19,23 @@
 2. 머신러닝의 종류
 =====================
 (1) 지도학습(교사학습)
+
     1) 회귀(Regression)
-        - 선형 회귀(LInear Regression)
+        - 선형 회귀(Linear Regression)
         
     2) 분류(Classification)
-        - Logistic Regreddion
-        - KNN
-        - Decision Tree
-        - Random Forest
-        - SVM
-        - Naive Bayes
-        - Neural Network
+        - Logistic Regression : 독립변수와 종속변수의 선형 관계성을 기반으로 하는 알고리즘
+        - KNN : 근접 거리를 기준으로하는 최소 근접 알고리즘
+        - Decision Tree : 데이터의 균일도에 따른 규칙 기반 알고리즘
+        - Random Forest 
+        - SVM : 개별 클래스간의 최대 분류 마진을 효과적으로 찾아주는 알고리즘
+        - Naive Bayes : 베이즈 통계와 생성 모델에 기반으로 하는 알고리즘
+        - Neural Network : 심층 연결 기반의 신경망
         
 (2) 비지도 학습(비교사 학습)
     1) 군집(Clustering)
         - K-Means
         - DBSCAN
-양정우[ 학부수료 / 생명정보공학과 ]에서 나에게:  (DM) 11:15 AM
-1. 개요
-=====================
-(1) AI
-    -머신러닝, 컴퓨터 비전, 자연어처리, 로봇공학 등 그와 관련된 모든 주제를 포함하는 개념
-    
-(2) Machine Learning
-    -더 많은 데이터 축적을 통해 성능을 개선할 수 있도록 하는 다양한 알고리즘과 방법론
-    -"환경(E)과의 상호작용을 통해서 축적되는 경험적인 데이터(D)를 바탕으로 지식 즉 모델(M)을 자동으로 구축하고 스스로 성능을 향상하는 시스템" -Tom Mitchell(1997)
-    -데이터를 기반으로 모델을 자동으로 생성하는 기술
-    -실세계의 복잡한 데이터로부터 규칙과 패턴을 발견하여 미래를 예측하는 기술
-    -입출력 데이터로부터 프로그램(알고리즘)을 자동으로 생성하는 기술
-    
-    
-(3) Machine Learning 과 Data Mining
-    -머신러닝은 훈련 데이터를 통해 학습된 알려진 속성을기반으로 한 예측에 중점
-    -데이터 마이닝은 데이터의 미처 몰랐던 속성을 발견하는 것에 집중
-    -데이터 마아닝에서는 머신러닝은 필수가 아니지만 머신러닝에서는 데이터 마이닝이 필수이다.
-    
-    
-2. 머신러닝의 종류
-    (1) 지도학습
-        -회귀(Regression)
-            -선형회귀(Linear Regression, 연속데이터)
-        
-        -분류(Classification)
-            -로지스틱 회귀(Logistic Regression, 이산데이터)
-            -KNN
-            -Decision Tree
-            -Random Forest
-            -SVM
-            -Naive Bayes
-            -Neural Network
-            
-    (2) 비지도학습
-        1) 군집(Clustering)
-            - K-means
-            - DBSCAN
-            - 이상치
-김주원에서 나에게:  (DM) 11:15 AM
-1.개요 
-========================
-(1) AI
-    - 머신러닝, 컴퓨터비전, 자연어처리, 로봇공학 등 그와 관련된 모든 주제를 포함하는 개념 
-        
-(2) Machine Learning 
-    - 더 많은 데이터 축적을 통해 성능을 개선할 수 있도록 하는 다양한 알고리즘과 방법론 
-    - "환경(E)과의 상호 작용을 통해 축적되는 경험적인 데이터(D)를 바탕으로 지식 즉 모델(M)을
-      자동으로 구축하고 스스로 성능(P)을 향상하는 시스템" -Tom Mitchell(1997)
-    - 데이터를 기반으로 모델을 자동으로 생성하는 기술
-    - 실세계의 복잡한 데이터로부터 규칙과 패턴을 발견하여 미래를 예측하는 기술
-    - 입출력 데이터로부터 프로그램 (알고리즘)을 자동으로 생성하는 기술 
-        
-(3) Machine Learning과 Data Mining 
-    - 머신러닝은 훈련 데이터를 통해 학습관 알려진 속성을 기반으로 한 예측에 중점
-    - 데이터마이닝은 데이터의 미저처 몰랐던 속성을 발견하는 것에 집중 
-    - 데이터마이닝에서는 머신러닝이 필수가 아니지만 머신러닝에서는 데이터마이닝이 필수다.
-    
-    
-2.머신러닝의 종류
-=======================
-(1) 지도학습(교사학습)              
-    *https://hunkim.github.io/ml/ (<-여기서 선형회귀, 로지스틱회귀 공부) 
-    1) 회귀(Regression) 
-        - 선형회귀(Linear Regression)
-    
-    2) 분류(Classification) 
-        - Logistic Regression 
-        - KNN
-        - Decison Tree
-        - Random Forest
-        - SVM
-        - Naive Bayes
-        - Neural Network
-(2) 비지도학습(비교사학습)
-    1) 군집(Clustering) 
-        - K-Means 
-        - DBSCAN 
         - 이상치 탐지, 특이치 탐지 
         
     2) 시각화, 차원축소 
