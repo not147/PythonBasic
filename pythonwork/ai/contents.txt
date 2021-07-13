@@ -22,12 +22,15 @@
 
     1) 회귀(Regression)
         - 선형 회귀(Linear Regression)
+        - 릿지, 라쏘, 엘라스틱넷
         
     2) 분류(Classification)
         - Logistic Regression : 독립변수와 종속변수의 선형 관계성을 기반으로 하는 알고리즘
         - KNN : 근접 거리를 기준으로하는 최소 근접 알고리즘
         - Decision Tree : 데이터의 균일도에 따른 규칙 기반 알고리즘
-        - Random Forest 
+            - Random Forest 
+            - GBM
+                - XGBoost, LightGBM
         - SVM : 개별 클래스간의 최대 분류 마진을 효과적으로 찾아주는 알고리즘
         - Naive Bayes : 베이즈 통계와 생성 모델에 기반으로 하는 알고리즘
         - Neural Network : 심층 연결 기반의 신경망
