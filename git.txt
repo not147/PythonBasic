@@ -1,0 +1,101 @@
+SCM(Software Configuration Management : 소프트웨어 형상 관리)
+*********************************************************************
+
+GIT
+====
+1. 설치
+	- http://git-scm.com
+		윈도우용 git 프로그램 설치
+	- SourceTree 설치
+		https://www.sourcetreeapp.com/
+	- VisualStudioCode 설치
+		https://code.visualstudio.com/
+
+2. 프로그램 선택
+	(1) CUI
+		- 윈도우의 cmd(명령 프롬프트, 파워쉘)
+		- Linux의 Bash shell(추천)
+	(2) GUI
+		- SourceTree, ...
+		- 개발툴의 플러그인(eclipse, pycharm, visualstudio, ...)
+
+3. 버전관리 용어
+	(1) 알파 버전(Alpha) : 개발자 내부에서 시험하기 위한 버전
+	(2) 베타 버전(Beta) : 고객이 시험하기 위한 버전
+	(3) RC(Release Candidate) : 1.0-RC1, 1.0-RC2, ...
+	(4) GA(General Availability) : 1.0.GA, 1.0
+	(5) M(Milestone) : 특정 시점까지의 개발 결과를 빌드한 버전 : 1.0-M1, 1.0-M2, ...
+
+4. 버전관리 전략(Subversion 기준)
+	(1) branch
+	(2) tag
+	(3) trunk
+
+5. 실습
+	(1) git을 설치하고 가장 먼저 해야할 일
+		git config --list
+		
+		1) 명령어로 수정		
+			git config --global user.name "netsong7"
+			git config --global user.email "netsong7@naver.com"
+
+		2) .gitconfig 파일을 수정
+		3) 자체 에디터를 실행하여 수정
+			git config --global -e
+		
+
+	(2) 그외 환경 설정
+		1) 텍스트 에디터 설정
+			- notepad++일 경우
+			git config --global core.editor "'C:/Program Files (x86)/Notepad++/notepad++.exe' -multiInst -nosession"
+
+			- visualstudio code 일경우
+			git config --global core.editor "code --wait"
+
+	(3) 프로젝트 생성
+		mkdir git_projects
+		cd git_projects
+		mkdir first_project
+		
+		ls -al
+
+		1) 저장소(Local Repository) 생성(초기화)
+			git init		
+			rm -rf .git
+
+		2) Working Directory에서 작업
+			echo hello world! > test1.txt
+			echo hello world! > test2.txt
+			echo hello world! > test3.txt
+
+			git status
+
+		3) Staging area에서 작업
+			git add test1.txt
+			
+			git status
+			
+			staging area 에 있던 파일을 다시 working directory로 옮길 수 있다.
+			git rm --cached test1.txt
+
+			git status
+
+			이번엔 세 개의 파일 모두 staging에 올려 놓는다.
+			git add test1.txt test2.txt test3.txt
+			또는
+			git *.txt
+			또는
+			git add --all 또는 git add .
+
+			git status
+
+			새로운 내용을 test1.txt에 추가(modify)
+			echo fine thank you~ >> test1.txt
+			
+			git status
+
+
+
+
+
+
