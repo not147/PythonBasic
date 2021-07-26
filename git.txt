@@ -70,29 +70,120 @@ GIT
 
 			git status
 
-		3) Staging area에서 작업
+		3) Staging area에서 작업(WD -> Staging area)
 			git add test1.txt
-			
 			git status
 			
 			staging area 에 있던 파일을 다시 working directory로 옮길 수 있다.
 			git rm --cached test1.txt
-
 			git status
 
 			이번엔 세 개의 파일 모두 staging에 올려 놓는다.
 			git add test1.txt test2.txt test3.txt
 			또는
-			git *.txt
+			git add *.txt
 			또는
 			git add --all 또는 git add .
 
 			git status
 
-			새로운 내용을 test1.txt에 추가(modify)
-			echo fine thank you~ >> test1.txt
-			
-			git status
+		4) Local Repository에 저장(Staging area -> Local Repository)
+			git commit
+			또는
+			git commit -m "메시지..."
+
+		5) 이력(history) 확인
+			git log
+			git log --graph
+			git log --graph --oneline
+
+	(4) 수정된 파일 비교
+		git diff
+		git diff --staged 또는 git diff --cached
+
+		git config --global -e
+			[diff]
+				tool = vscode
+			[difftool "vscode"]
+				cmd = code --wait --diff $LOCAL $REMOTE
+
+		git difftool
+		git difftool --staged
+
+	(5) 커밋 되돌리기 : reset, revert, --amend
+		git revert <checksum>
+		git reset --[hard | mixed | soft] <checksum>
+		------------------------------------------------------
+		git revert 7ffcaff
+		git reset --hard <checksum>
+
+
+	(6) 파일 무시하기 : .gitignore
+		touch log1.log
+		touch thumb.db	
+		touch test4.txt
+
+		echo *.log > .gitignore	
+		echo thumb.db >> .gitignore
+
+	(7) Remote Repository
+		1) 직접 서버 구축 : artifactory, ...
+		2) 웹 서버 이용 : github, gitlab, bitbucket, codebase, cloudforge, ...
+
+		3) 명령어
+			git remote, git remote -v
+			git remote add 별명 <github 주소>
+
+			git push <업로드할 서버 주소> <올릴 데이터가 있는 저장소 이름(로컬)>
+			git push origin master
+
+			git pull <다운로드할 서버 주소> <받을 데이터가 있는 저장소 이름(서버)>
+			git pull origin master
+			* pull : fetch + merge			
+
+			git fetch <다운로드할 서버 주소> <받을 데이터가 있는 저장소 이름(서버)>
+			git merge <합칠 데이터 주소>
+			git fetch origin master
+			git merge FETCH_HEAD
+
+			git clone <서버주소>
+
+	(8) Branch
+		1) 기본 명령어
+			git branch : 브랜치의 정보 보기
+			git branch <브랜치명> : 브랜치 생성
+			git checkout <브랜치명> : 브랜치 전환
+			git merge <브랜치명> : 브랜치 합치기
+			git branch --delete <브랜치명> 또는 git branch -D <브랜치명> : 브랜치 삭제
+
+			서버에서 삭제
+			git push --delete origin member
+
+
+	(9) 협업
+		1) collaboration
+			팀장:
+				- 해당 프로젝트의 settings 로 이동
+				- Manage Access 선택 후 invite
+				- 팀장은 기본 template을 master로 올린다.
+				- 팀원들이 올린 브랜치를 머지 후(각각 브랜치를 pull) 다시 서버에 push
+				- 필요없는 브랜치 삭제
+
+			팀원:
+				- 프로젝트를 clone으로 생성(기본 template을 다운로드)
+				- 브랜치 생성 후 작업
+				- 서버로 push(자기가 만든 브랜치)
+		2) fork
+			- https://github.com/octocat/Spoon-Knife
+
+
+
+
+
+
+
+
+
 
 
 
